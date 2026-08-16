@@ -1,3 +1,5 @@
+package com.example.demo.id;
+
 public class SnowFlake {
     // 起始的时间戳
     private final static long START_STAMP = 1480166465631L;
@@ -67,20 +69,8 @@ public class SnowFlake {
         }
         return mill;
     }
+
     private long getNewStamp() {
         return System.currentTimeMillis();
-    }
-
-    public static void main(String[] args) {
-        System.out.println("SnowFlake ID Generation Test");
-        System.out.println("----------------------------------");
-        System.out.println("Generating 10 unique SnowFlake IDs:");
-        System.out.println("--------------AAAA--------------------");
-        System.out.println("----------------------------------");
-        System.out.println("Timestamp (ms) | Datacenter ID | Machine ID | Sequence Number | Generated ID");
-        SnowFlake snowFlake = new SnowFlake(1, 1);
-        for (int i = 0; i < 10; i++) {
-            System.out.println(snowFlake.nextId());
-        }
     }
 }
