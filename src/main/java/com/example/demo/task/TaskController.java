@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,8 +26,16 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<Task> list() {
-        return taskService.list();
+    public List<Task> list(
+            @RequestParam(required = false) Boolean done,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(required = false) Integer limit) {
+        return taskService.list(done, offset, limit);
+    }
+
+    @GetMapping("/{id}")
+    public Task get(@PathVariable Long id) {
+        return taskService.get(id);
     }
 
     @PostMapping

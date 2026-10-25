@@ -15,9 +15,30 @@ public class TaskService {
     private final AtomicLong idGenerator = new AtomicLong(0);
 
     public List<Task> list() {
+        return list(null, 0, null);
+    }
+
+    public List<Task> list(Boolean done, int offset, Integer limit) {
+        if (offset < 0) {
+            throw new IllegalArgumentException("offset must be at least 0");
+        }
+        if (limit != null && (limit < 1 || limit > 100)) {
+            throw new IllegalArgumentException("limit must be between 1 and 100");
+        }
         return tasks.values().stream()
+                .filter(task -> done == null || task.done() == done)
                 .sorted(Comparator.comparing(Task::id))
+                .skip(offset)
+                .limit(limit == null ? Long.MAX_VALUE : limit)
                 .toList();
+    }
+
+    public Task get(Long id) {
+        Task task = tasks.get(id);
+        if (task == null) {
+            throw new TaskNotFoundException(id);
+        }
+        return task;
     }
 
     public Task create(String title) {
