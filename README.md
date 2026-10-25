@@ -47,6 +47,7 @@ curl -X PATCH http://localhost:8080/api/tasks/1/complete
 ```
 
 - 空标题提交返回 `400`（`ProblemDetail` 校验错误）。
+- 请求体缺失、为 `null`、JSON 格式错误或字段类型不符时返回 `400 application/problem+json`，错误信息不回显请求内容或内部解析细节；请求不会创建任务。
 - 查询或完成不存在的任务返回 `404`（`ProblemDetail`）。
 - 列表可选 `done=true|false`、`offset`（默认 `0`，非负整数）、`limit`（`1..100`）；省略 `limit` 保持原有全部返回行为，响应始终为 JSON 数组。
 - 无匹配任务或 `offset` 超出结果范围时返回空数组；无效参数类型、负偏移量或越界 `limit` 返回 `400`（`ProblemDetail`）。
