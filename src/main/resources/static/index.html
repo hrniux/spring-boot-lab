@@ -100,6 +100,7 @@
             
             // 初始化分数
             score = 0;
+            gameSpeed = 150;
             scoreElement.textContent = `分数: ${score}`;
             
             // 生成食物
@@ -115,25 +116,17 @@
         
         // 生成食物
         function generateFood() {
-            // 随机位置
-            let foodX, foodY;
-            let validPosition = false;
-            
-            while (!validPosition) {
-                foodX = Math.floor(Math.random() * gridWidth);
-                foodY = Math.floor(Math.random() * gridHeight);
-                
-                // 确保食物不会出现在蛇身上
-                validPosition = true;
-                for (let segment of snake) {
-                    if (segment.x === foodX && segment.y === foodY) {
-                        validPosition = false;
-                        break;
+            const occupied = new Set(snake.map(segment => segment.y * gridWidth + segment.x));
+            const available = [];
+            for (let y = 0; y < gridHeight; y++) {
+                for (let x = 0; x < gridWidth; x++) {
+                    if (!occupied.has(y * gridWidth + x)) {
+                        available.push({x, y});
                     }
                 }
             }
-            
-            food = {x: foodX, y: foodY};
+            food = available.length ? available[Math.floor(Math.random() * available.length)] : null;
+            return food !== null;
         }
         
         // 绘制游戏
@@ -160,12 +153,14 @@
             }
             
             // 绘制食物
-            ctx.fillStyle = '#FF4500';
-            ctx.beginPath();
-            const centerX = food.x * gridSize + gridSize / 2;
-            const centerY = food.y * gridSize + gridSize / 2;
-            ctx.arc(centerX, centerY, gridSize / 2, 0, Math.PI * 2);
-            ctx.fill();
+            if (food) {
+                ctx.fillStyle = '#FF4500';
+                ctx.beginPath();
+                const centerX = food.x * gridSize + gridSize / 2;
+                const centerY = food.y * gridSize + gridSize / 2;
+                ctx.arc(centerX, centerY, gridSize / 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
             
             // 如果游戏结束，显示游戏结束文字
             if (isGameOver) {
@@ -175,7 +170,8 @@
                 ctx.fillStyle = '#fff';
                 ctx.font = '30px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText('游戏结束', canvas.width / 2, canvas.height / 2 - 20);
+                ctx.fillText(snake.length === gridWidth * gridHeight ? '恭喜获胜' : '游戏结束',
+                    canvas.width / 2, canvas.height / 2 - 20);
                 ctx.font = '20px Arial';
                 ctx.fillText(`最终分数: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
                 ctx.fillText('点击"开始游戏"重新开始', canvas.width / 2, canvas.height / 2 + 60);
@@ -213,7 +209,9 @@
             }
             
             // 检查是否撞到自己
-            for (let i = 0; i < snake.length; i++) {
+            const growing = food && head.x === food.x && head.y === food.y;
+            const collisionLength = growing ? snake.length : snake.length - 1;
+            for (let i = 0; i < collisionLength; i++) {
                 if (snake[i].x === head.x && snake[i].y === head.y) {
                     gameOver();
                     return;
@@ -224,13 +222,16 @@
             snake.unshift(head);
             
             // 检查是否吃到食物
-            if (head.x === food.x && head.y === food.y) {
+            if (growing) {
                 // 增加分数
                 score += 10;
                 scoreElement.textContent = `分数: ${score}`;
                 
                 // 生成新的食物
-                generateFood();
+                if (!generateFood()) {
+                    gameOver();
+                    return;
+                }
                 
                 // 每得100分加快游戏速度
                 if (score % 100 === 0 && gameSpeed > 50) {
@@ -256,17 +257,19 @@
         function gameOver() {
             isGameOver = true;
             clearInterval(gameInterval);
+            gameInterval = undefined;
             draw();
         }
         
         // 开始游戏
         function startGame() {
-            if (isGameOver || isPaused) {
+            if (gameInterval === undefined || isGameOver || isPaused) {
                 if (isGameOver) {
                     initGame();
                 }
                 isPaused = false;
                 pauseBtn.textContent = '暂停';
+                clearInterval(gameInterval);
                 gameInterval = setInterval(gameLoop, gameSpeed);
             }
         }
