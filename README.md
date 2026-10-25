@@ -46,6 +46,14 @@ curl -X PATCH http://localhost:8080/api/tasks/1/complete
 ./mvnw test
 ```
 
+贪吃蛇回归测试使用 Node.js 22 的内置测试工具，无需安装 npm 依赖：
+
+```bash
+node --test test/snake.test.cjs
+```
+
+CI 同时运行 Maven 完整构建与游戏回归测试。
+
 ## 说明
 
 本仓库为个人学习实验，非生产项目。`src/main/java` 下的 `Test.java`、`Car.java`、`loop/Test.java` 为带 `main` 方法的独立练习示例，与 Spring Boot 应用主流程无耦合。
